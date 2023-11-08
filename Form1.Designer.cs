@@ -524,6 +524,7 @@
             // label1
             // 
             label1.AutoSize = true;
+            label1.ForeColor = Color.Red;
             label1.Location = new Point(13, 245);
             label1.Name = "label1";
             label1.Size = new Size(377, 20);
@@ -643,7 +644,7 @@
             SummaryGroupBox.Controls.Add(Term2DetailsPanel);
             SummaryGroupBox.Location = new Point(12, 425);
             SummaryGroupBox.Name = "SummaryGroupBox";
-            SummaryGroupBox.Size = new Size(1575, 385);
+            SummaryGroupBox.Size = new Size(1575, 416);
             SummaryGroupBox.TabIndex = 23;
             SummaryGroupBox.TabStop = false;
             SummaryGroupBox.Text = "Detailed Calculation of Investment";
@@ -1481,7 +1482,7 @@
             SummaryPanel.Controls.Add(SummaryTotalAmountInvestedTextBox);
             SummaryPanel.Controls.Add(SummaryTotalTransactionLabel);
             SummaryPanel.Controls.Add(SummaryTotalTransactionTextBox);
-            SummaryPanel.Location = new Point(191, 816);
+            SummaryPanel.Location = new Point(191, 847);
             SummaryPanel.Name = "SummaryPanel";
             SummaryPanel.Size = new Size(990, 91);
             SummaryPanel.TabIndex = 75;
@@ -1534,7 +1535,7 @@
             AutoScaleMode = AutoScaleMode.Font;
             AutoSizeMode = AutoSizeMode.GrowAndShrink;
             BackgroundImageLayout = ImageLayout.Stretch;
-            ClientSize = new Size(1603, 912);
+            ClientSize = new Size(1603, 958);
             Controls.Add(SummaryPanel);
             Controls.Add(SearchTransactionListBox);
             Controls.Add(SelectedInvestmentPlanGroupBox);

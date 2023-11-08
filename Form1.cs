@@ -67,8 +67,8 @@ namespace Invest4U
             SearchButton.Enabled = false;
             SummaryPanel.Visible = false;
 
-            DisplayButtonToolTip.SetToolTip(DisplayButton, "Click to DIsplay The investment Plan Details");
-            ProceedButtonToolTip.SetToolTip(ProceedButton, "CLick to proceed with the selected Investment Plan");
+            DisplayButtonToolTip.SetToolTip(DisplayButton, "Click to Display The investment Plan Details");
+            ProceedButtonToolTip.SetToolTip(ProceedButton, "CLick to Proceed with the selected Investment Plan");
             SubmitButtonToolTip.SetToolTip(SubmitButton, "Click to Submit the Selected Investment Plan");
             SummaryButtonToolTip.SetToolTip(SummaryButton, "Click to View the Summary of Investments");
             SearchButtonToolTip.SetToolTip(SearchButton, "Click to Search for particular Investment Records");
@@ -141,39 +141,49 @@ namespace Invest4U
         {
             SelectedInvestmentPlanGroupBox.Visible = false;
             SummaryGroupBox.Visible = true;
-            double PrincipalAmount = double.Parse(InvestmentAmountTextBox.Text);
-            int InvestmentAmount = int.Parse(InvestmentAmountTextBox.Text);
-            OutputInvestmentAmountTextBox.Text = InvestmentAmount.ToString("C0");
-            if (InvestmentCategory1RadioButton.Checked)
+
+            if (string.IsNullOrEmpty(InvestmentAmountTextBox.Text))
             {
-                for (int i = 0; i < InvestmentUptoListBox.Items.Count; i++)
-                {
-                    switch (i)
-                    {
-                        case 0: PanelTerm = PANEL1TERM1; TermInterest = PANEL1TERM1INTEREST; break;
-                        case 1: PanelTerm = PANEL1TERM2; TermInterest = PANEL1TERM2INTEREST; break;
-                        case 2: PanelTerm = PANEL1TERM3; TermInterest = PANEL1TERM3INTEREST; break;
-                        case 3: PanelTerm = PANEL1TERM4; TermInterest = PANEL1TERM4INTEREST; break;
-                    }
-                    double InterestCalculation = CalculateInterest(PrincipalAmount, TermInterest, PanelTerm);
-                    DisplayUserValues(i, PanelTerm, TermInterest, InterestCalculation);
-                }
+                SummaryGroupBox.Visible = false;
             }
-            if (InvestmentCategory2RadioButton.Checked)
+            else
             {
-                for (int i = 0; i < InvestmentMoreThanListBox.Items.Count; i++)
+                double PrincipalAmount = double.Parse(InvestmentAmountTextBox.Text);
+                int InvestmentAmount = int.Parse(InvestmentAmountTextBox.Text);
+                OutputInvestmentAmountTextBox.Text = InvestmentAmount.ToString("C0");
+                if (InvestmentCategory1RadioButton.Checked)
                 {
-                    switch (i)
+                    for (int i = 0; i < InvestmentUptoListBox.Items.Count; i++)
                     {
-                        case 0: PanelTerm = PANEL2TERM1; TermInterest = PANEL2TERM1INTEREST; break;
-                        case 1: PanelTerm = PANEL2TERM2; TermInterest = PANEL2TERM2INTEREST; break;
-                        case 2: PanelTerm = PANEL2TERM3; TermInterest = PANEL2TERM3INTEREST; break;
-                        case 3: PanelTerm = PANEL2TERM4; TermInterest = PANEL2TERM4INTEREST; break;
+                        switch (i)
+                        {
+                            case 0: PanelTerm = PANEL1TERM1; TermInterest = PANEL1TERM1INTEREST; break;
+                            case 1: PanelTerm = PANEL1TERM2; TermInterest = PANEL1TERM2INTEREST; break;
+                            case 2: PanelTerm = PANEL1TERM3; TermInterest = PANEL1TERM3INTEREST; break;
+                            case 3: PanelTerm = PANEL1TERM4; TermInterest = PANEL1TERM4INTEREST; break;
+                        }
+                        double InterestCalculation = CalculateInterest(PrincipalAmount, TermInterest, PanelTerm);
+                        DisplayUserValues(i, PanelTerm, TermInterest, InterestCalculation);
                     }
-                    double InterestCalculation = CalculateInterest(PrincipalAmount, TermInterest, PanelTerm);
-                    DisplayUserValues(i, PanelTerm, TermInterest, InterestCalculation);
                 }
+                if (InvestmentCategory2RadioButton.Checked)
+                {
+                    for (int i = 0; i < InvestmentMoreThanListBox.Items.Count; i++)
+                    {
+                        switch (i)
+                        {
+                            case 0: PanelTerm = PANEL2TERM1; TermInterest = PANEL2TERM1INTEREST; break;
+                            case 1: PanelTerm = PANEL2TERM2; TermInterest = PANEL2TERM2INTEREST; break;
+                            case 2: PanelTerm = PANEL2TERM3; TermInterest = PANEL2TERM3INTEREST; break;
+                            case 3: PanelTerm = PANEL2TERM4; TermInterest = PANEL2TERM4INTEREST; break;
+                        }
+                        double InterestCalculation = CalculateInterest(PrincipalAmount, TermInterest, PanelTerm);
+                        DisplayUserValues(i, PanelTerm, TermInterest, InterestCalculation);
+                    }
+                }
+
             }
+
         }
 
         // Method to display user values in Summary Group Box on Click of Display Button
@@ -497,6 +507,7 @@ namespace Invest4U
         * */
         private void SummaryButton_Click(object sender, EventArgs e)
         {
+            DisableSearchRadioButton.Checked = true;
             SearchTransactionListBox.Items.Clear();
             SummaryPanel.Visible = true;
             StreamReader SearchFile;
@@ -548,6 +559,7 @@ namespace Invest4U
         */
         private void SearchButton_Click(object sender, EventArgs e)
         {
+            SearchTransactionListBox.Enabled = true;
             string TransactionSearch = TransactionNumberSearchTextBox.Text;
             string NameSearch = NameSearchTextBox.Text;
             string DateSearch = DateSearchTextBox.Text;
@@ -575,78 +587,54 @@ namespace Invest4U
 
                     if (TransactionSearch != "")
                     {
-                        if (SearchByTransactionID.Equals(TransactionSearch))
+                        if (SearchByTransactionID.Equals(TransactionSearch, StringComparison.OrdinalIgnoreCase))
                         {
                             SearchTransactionListBox.Items.Add(SearchDisplay(SearchByTransactionID, SearchByName, SearchByDate,
                             SearchByEmailID, SearchByAge, SearchByTelephoneNumber, SearchByInvestment, SearchByTerm,
                             SearchByInterest, SearchByBalance));
                             RecordsFound = true;
-                        }
-                        else
-                        {
-                            MessageBox.Show("Transactions for the Transaction ID entered doesnt exist, " + "\n" +
-                                "Kindly Check the Transaction ID", "Input Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                            SearchTransactionListBox.Visible = false;
                         }
                     }
 
                     else if (NameSearch != "")
                     {
-                        if (SearchByName.Equals(NameSearch))
+                        if (SearchByName.Equals(NameSearch, StringComparison.OrdinalIgnoreCase))
                         {
                             SearchTransactionListBox.Items.Add(SearchDisplay(SearchByTransactionID, SearchByName, SearchByDate,
                             SearchByEmailID, SearchByAge, SearchByTelephoneNumber, SearchByInvestment, SearchByTerm,
                             SearchByInterest, SearchByBalance));
                             RecordsFound = true;
-                        }
-                        else
-                        {
-                            MessageBox.Show("Transactions for the Name entered doesnt exist, " + "\n" +
-                                "Kindly Check the Name", "Input Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                            SearchTransactionListBox.Visible = false;
                         }
                     }
 
                     else if (DateSearch != "")
                     {
-                        if (SearchByDate.Equals(DateSearch))
+                        if (SearchByDate.Equals(DateSearch, StringComparison.OrdinalIgnoreCase))
                         {
                             SearchTransactionListBox.Items.Add(SearchDisplay(SearchByTransactionID, SearchByName, SearchByDate,
                             SearchByEmailID, SearchByAge, SearchByTelephoneNumber, SearchByInvestment, SearchByTerm,
                             SearchByInterest, SearchByBalance));
                             RecordsFound = true;
-                        }
-
-                        else
-                        {
-                            MessageBox.Show("Transaction for the Date entered doesnt exist, " + "\n" +
-                                "Kindly Check the Date", "Input Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                            SearchTransactionListBox.Visible = false;
                         }
                     }
 
                     else
                     {
-                        if (SearchByEmailID.Equals(EmailIdSearch))
+                        if (SearchByEmailID.Equals(EmailIdSearch, StringComparison.OrdinalIgnoreCase))
                         {
                             SearchTransactionListBox.Items.Add(SearchDisplay(SearchByTransactionID, SearchByName, SearchByDate,
                             SearchByEmailID, SearchByAge, SearchByTelephoneNumber, SearchByInvestment, SearchByTerm,
                             SearchByInterest, SearchByBalance));
                             RecordsFound = true;
                         }
-
-                        else
-                        {
-                            MessageBox.Show("Transactions for the Email ID entered doesnt exist, " + "\n" +
-                                "Kindly Check the Email ID", "Input Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                            SearchTransactionListBox.Visible = false;
-                        }
                     }
                 }
                 SearchFile.Close();
-                if(!RecordsFound)
+                if (!RecordsFound)
                 {
-                    SearchTransactionListBox.Visible=false;
+                    MessageBox.Show("Transactions for the entered data doesnt exist, " + "\n" +
+                               "Kindly Check the details provided", "Input Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    SearchTransactionListBox.Visible = false;
                 }
                 else
                 {
@@ -656,7 +644,7 @@ namespace Invest4U
             }
             else
             {
-                MessageBox.Show("An error occurred while searching, Kindly select atleast one search option", 
+                MessageBox.Show("An error occurred while searching, Kindly select atleast one search option",
                     "Search Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
@@ -711,8 +699,16 @@ namespace Invest4U
         }
 
         // Actions performed on InvestmentAmount TextBox Text changed property
+        // The DisplayButton_Click is automatically invoked and this dynamically changes the details of Investments 
         private void InvestmentAmountTextBox_TextChanged(object sender, EventArgs e)
         {
+            if (string.IsNullOrEmpty(InvestmentAmountTextBox.Text))
+            {
+                DisplayButton.Enabled = false;
+                InvestmentCategory1RadioButton.Checked = false;
+                InvestmentCategory2RadioButton.Checked = false;
+            }
+
             InvestmentCategory1RadioButton.Enabled = true;
             if (InvestmentAmountTextBox.Text != "")
             {
@@ -737,6 +733,7 @@ namespace Invest4U
                 }
             }
 
+            DisplayButton_Click(sender, e);
         }
 
         /* Actions performed on click of end button
@@ -918,6 +915,7 @@ namespace Invest4U
         {
             if (DisableSearchRadioButton.Checked)
             {
+                DisplayButton.Enabled = false;
                 InvestmentAmountTextBox.Enabled = true;
                 InvestmentAmountTextBox.Focus();
                 InvestmentAmountTextBox.Text = "";
