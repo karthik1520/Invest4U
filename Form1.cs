@@ -1,11 +1,3 @@
-/* 
- * Student Name: Karthik Mahadevan Ramesh Kumar
- * Student ID: 23101941
- * Date:08/11/2023
- * Assignment: 3
- * Assignment: Create an application for Invest4U Application of Mad4Money Bank Corp Organization
- */
-
 /* Invest4U Application
  * This application is designed to process client transaction.
  * The application enables users to select differnet investment plans and calculates its interest at the end of term.
@@ -13,7 +5,9 @@
  * It allows for summary view
  */
 
+using System.Globalization;
 using System.IO;
+using System.Text.RegularExpressions;
 
 namespace Invest4U
 {
@@ -28,16 +22,16 @@ namespace Invest4U
 
         const int PANEL1TERM1 = 1, PANEL1TERM2 = 3, PANEL1TERM3 = 5, PANEL1TERM4 = 10, PANEL2TERM1 = 1, PANEL2TERM2 = 3,
             PANEL2TERM3 = 5, PANEL2TERM4 = 10;
-        const double PANEL1TERM1INTEREST = 0.00500, PANEL1TERM2INTEREST = 0.006250, PANEL1TERM3INTEREST = 0.007125, PANEL1TERM4INTEREST = 0.011250,
-            PANEL2TERM1INTEREST = 0.00600, PANEL2TERM2INTEREST = 0.007250, PANEL2TERM3INTEREST = 0.008125, PANEL2TERM4INTEREST = 0.012500;
+        const decimal PANEL1TERM1INTEREST = 0.00500m, PANEL1TERM2INTEREST = 0.006250m, PANEL1TERM3INTEREST = 0.007125m, PANEL1TERM4INTEREST = 0.011250m,
+            PANEL2TERM1INTEREST = 0.00600m, PANEL2TERM2INTEREST = 0.007250m, PANEL2TERM3INTEREST = 0.008125m, PANEL2TERM4INTEREST = 0.012500m;
         const int BONUS = 25000;
 
         int MaxLoginAttempt = 3, LoginAttempt = 0, IncorrectAttempt = 3;
         int PanelTerm, Age = 0;
-        double TermInterest = 0, PrincipalInvestment, EndOfTermBalance, InterestEarned;
+        decimal TermInterest = 0, PrincipalInvestment, EndOfTermBalance, InterestEarned;
         const string PASSWORD = "ShowMeTheMoney#";
 
-        string Date = DateTime.Now.ToString("d");
+        string Date = DateTime.Now.ToString("dd/MM/yyyy");
 
 
         // Events that happen onload of form and setting tooptips
@@ -118,16 +112,16 @@ namespace Invest4U
         }
 
         // Method to calculate interest for the selected investment plans
-        public double CalculateInterest(double Investment, double InterestRate, int Duration)
+        public decimal CalculateInterest(decimal Investment, decimal InterestRate, int Duration)
         {
-            PrincipalInvestment = double.Parse(InvestmentAmountTextBox.Text);
+            PrincipalInvestment = decimal.Parse(InvestmentAmountTextBox.Text);
             EndOfTermBalance = 0;
             int year = PanelTerm, months = 12;
             for (int i = 1; i <= year; i++)
             {
-                double formulapart = 1 + InterestRate / (100 * months);
-                double formulapower = 12 * year;
-                EndOfTermBalance = PrincipalInvestment * (Math.Pow(formulapart, formulapower));
+                decimal formulapart = 1 + InterestRate / (100 * months);
+                decimal formulapower = 12 * year;
+                EndOfTermBalance = PrincipalInvestment * (decimal)Math.Pow((double)formulapart, (double)formulapower);
                 if (PrincipalInvestment > 1000000 && year >= 5)
                 {
                     EndOfTermBalance = EndOfTermBalance + BONUS;
@@ -142,52 +136,50 @@ namespace Invest4U
             SelectedInvestmentPlanGroupBox.Visible = false;
             SummaryGroupBox.Visible = true;
 
-            if (string.IsNullOrEmpty(InvestmentAmountTextBox.Text))
+            if (string.IsNullOrEmpty(InvestmentAmountTextBox.Text) ||
+            !decimal.TryParse(InvestmentAmountTextBox.Text, out decimal PrincipalAmount) ||   PrincipalAmount == -1)
             {
                 SummaryGroupBox.Visible = false;
+                MessageBox.Show("Please enter a valid investment amount.", "Invalid Input", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                InvestmentAmountTextBox.Focus();
+                return;
             }
-            else
+            
+            OutputInvestmentAmountTextBox.Text = PrincipalAmount.ToString("C0");
+            if (InvestmentCategory1RadioButton.Checked)
             {
-                double PrincipalAmount = double.Parse(InvestmentAmountTextBox.Text);
-                int InvestmentAmount = int.Parse(InvestmentAmountTextBox.Text);
-                OutputInvestmentAmountTextBox.Text = InvestmentAmount.ToString("C0");
-                if (InvestmentCategory1RadioButton.Checked)
+                for (int i = 0; i < InvestmentUptoListBox.Items.Count; i++)
                 {
-                    for (int i = 0; i < InvestmentUptoListBox.Items.Count; i++)
+                    switch (i)
                     {
-                        switch (i)
-                        {
-                            case 0: PanelTerm = PANEL1TERM1; TermInterest = PANEL1TERM1INTEREST; break;
-                            case 1: PanelTerm = PANEL1TERM2; TermInterest = PANEL1TERM2INTEREST; break;
-                            case 2: PanelTerm = PANEL1TERM3; TermInterest = PANEL1TERM3INTEREST; break;
-                            case 3: PanelTerm = PANEL1TERM4; TermInterest = PANEL1TERM4INTEREST; break;
-                        }
-                        double InterestCalculation = CalculateInterest(PrincipalAmount, TermInterest, PanelTerm);
-                        DisplayUserValues(i, PanelTerm, TermInterest, InterestCalculation);
+                        case 0: PanelTerm = PANEL1TERM1; TermInterest = PANEL1TERM1INTEREST; break;
+                        case 1: PanelTerm = PANEL1TERM2; TermInterest = PANEL1TERM2INTEREST; break;
+                        case 2: PanelTerm = PANEL1TERM3; TermInterest = PANEL1TERM3INTEREST; break;
+                        case 3: PanelTerm = PANEL1TERM4; TermInterest = PANEL1TERM4INTEREST; break;
                     }
+                    decimal InterestCalculation = CalculateInterest(PrincipalAmount, TermInterest, PanelTerm);
+                    DisplayUserValues(i, PanelTerm, TermInterest, InterestCalculation);
                 }
-                if (InvestmentCategory2RadioButton.Checked)
-                {
-                    for (int i = 0; i < InvestmentMoreThanListBox.Items.Count; i++)
-                    {
-                        switch (i)
-                        {
-                            case 0: PanelTerm = PANEL2TERM1; TermInterest = PANEL2TERM1INTEREST; break;
-                            case 1: PanelTerm = PANEL2TERM2; TermInterest = PANEL2TERM2INTEREST; break;
-                            case 2: PanelTerm = PANEL2TERM3; TermInterest = PANEL2TERM3INTEREST; break;
-                            case 3: PanelTerm = PANEL2TERM4; TermInterest = PANEL2TERM4INTEREST; break;
-                        }
-                        double InterestCalculation = CalculateInterest(PrincipalAmount, TermInterest, PanelTerm);
-                        DisplayUserValues(i, PanelTerm, TermInterest, InterestCalculation);
-                    }
-                }
-
             }
-
+            if (InvestmentCategory2RadioButton.Checked)
+            {
+                for (int i = 0; i < InvestmentMoreThanListBox.Items.Count; i++)
+                {
+                    switch (i)
+                    {
+                        case 0: PanelTerm = PANEL2TERM1; TermInterest = PANEL2TERM1INTEREST; break;
+                        case 1: PanelTerm = PANEL2TERM2; TermInterest = PANEL2TERM2INTEREST; break;
+                        case 2: PanelTerm = PANEL2TERM3; TermInterest = PANEL2TERM3INTEREST; break;
+                        case 3: PanelTerm = PANEL2TERM4; TermInterest = PANEL2TERM4INTEREST; break;
+                    }
+                    decimal InterestCalculation = CalculateInterest(PrincipalAmount, TermInterest, PanelTerm);
+                    DisplayUserValues(i, PanelTerm, TermInterest, InterestCalculation);
+                }
+            }
         }
 
         // Method to display user values in Summary Group Box on Click of Display Button
-        private void DisplayUserValues(int TermIndex, int TermDuration, double TermInterest, double TermBalance)
+        private void DisplayUserValues(int TermIndex, int TermDuration, decimal TermInterest, decimal TermBalance)
         {
             InterestEarned = TermBalance - PrincipalInvestment;
             switch (TermIndex)
@@ -235,7 +227,7 @@ namespace Invest4U
             PlanDetailsInvestmentAmountTextBox.Text = InvestmentAmountTextBox.Text;
             int InvestmentAmount = int.Parse(InvestmentAmountTextBox.Text);
             OutputInvestmentAmountTextBox.Text = InvestmentAmount.ToString("C0");
-            double PrincipalAmount = double.Parse(InvestmentAmountTextBox.Text);
+            decimal PrincipalAmount = decimal.Parse(InvestmentAmountTextBox.Text);
             int year = PanelTerm;
             SearchTransactionListBox.Enabled = false;
 
@@ -250,7 +242,9 @@ namespace Invest4U
             }
 
             string EmailId = CustomerEmailIDTextBox.Text;
-            if (!EmailId.Contains("@") && !EmailId.Contains(".com") || EmailId == "")
+            string EmailPattern = @"^[a-zA-Z0-9._%+-]+@(yahoo|gmail|hotmail|outlook)\.(com|org|in)$";
+
+            if (!Regex.IsMatch(EmailId, EmailPattern) || EmailId == "")
             {
                 SummaryGroupBox.Visible = true;
                 SelectedInvestmentPlanGroupBox.Visible = false;
@@ -269,11 +263,14 @@ namespace Invest4U
             }
 
             string PhoneNumber = DisplayTelephoneNumberTextBox.Text;
-            if (PhoneNumber.Length < 10 || !int.TryParse(PhoneNumber, out _))
+            // Remove any spaces to allow for the format "095 321 4569" to be treated as "0953214569"
+            PhoneNumber = PhoneNumber.Replace(" ", "");
+
+            if (PhoneNumber.Length < 10 || !long.TryParse(PhoneNumber, out _))
             {
                 SummaryGroupBox.Visible = true;
                 SelectedInvestmentPlanGroupBox.Visible = false;
-                MessageBox.Show("Kindly Enter Valid Phone Number", "Invalid Input", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Kindly Enter a Valid Phone Number", "Invalid Input", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 DisplayTelephoneNumberTextBox.Focus();
                 return;
             }
@@ -283,7 +280,7 @@ namespace Invest4U
                 if (Term1RadioButton.Checked)
                 {
                     PanelTerm = PANEL1TERM1; TermInterest = PANEL1TERM1INTEREST;
-                    double InterestCalculation = CalculateInterest(PrincipalAmount, TermInterest, PanelTerm);
+                    decimal InterestCalculation = CalculateInterest(PrincipalAmount, TermInterest, PanelTerm);
                     InterestEarned = InterestCalculation - InvestmentAmount;
                     NameTextBox.Text = CustomerNameTextBox.Text;
                     DateTextBox.Text = Date;
@@ -299,7 +296,7 @@ namespace Invest4U
                 if (Term2RadioButton.Checked)
                 {
                     PanelTerm = PANEL1TERM2; TermInterest = PANEL1TERM2INTEREST;
-                    double InterestCalculation = CalculateInterest(PrincipalAmount, TermInterest, PanelTerm);
+                    decimal InterestCalculation = CalculateInterest(PrincipalAmount, TermInterest, PanelTerm);
                     InterestEarned = InterestCalculation - InvestmentAmount;
                     NameTextBox.Text = CustomerNameTextBox.Text;
                     DateTextBox.Text = Date;
@@ -315,7 +312,7 @@ namespace Invest4U
                 if (Term3RadioButton.Checked)
                 {
                     PanelTerm = PANEL1TERM3; TermInterest = PANEL1TERM3INTEREST;
-                    double InterestCalculation = CalculateInterest(PrincipalAmount, TermInterest, PanelTerm);
+                    decimal InterestCalculation = CalculateInterest(PrincipalAmount, TermInterest, PanelTerm);
                     InterestEarned = InterestCalculation - InvestmentAmount;
                     NameTextBox.Text = CustomerNameTextBox.Text;
                     DateTextBox.Text = Date;
@@ -330,7 +327,7 @@ namespace Invest4U
                 if (Term4RadioButton.Checked)
                 {
                     PanelTerm = PANEL1TERM4; TermInterest = PANEL1TERM4INTEREST;
-                    double InterestCalculation = CalculateInterest(PrincipalAmount, TermInterest, PanelTerm);
+                    decimal InterestCalculation = CalculateInterest(PrincipalAmount, TermInterest, PanelTerm);
                     InterestEarned = InterestCalculation - InvestmentAmount;
                     NameTextBox.Text = CustomerNameTextBox.Text;
                     DateTextBox.Text = Date;
@@ -349,7 +346,7 @@ namespace Invest4U
                 if (Term1RadioButton.Checked)
                 {
                     PanelTerm = PANEL2TERM1; TermInterest = PANEL2TERM1INTEREST;
-                    double InterestCalculation = CalculateInterest(PrincipalAmount, TermInterest, PanelTerm);
+                    decimal InterestCalculation = CalculateInterest(PrincipalAmount, TermInterest, PanelTerm);
                     InterestEarned = InterestCalculation - InvestmentAmount;
                     NameTextBox.Text = CustomerNameTextBox.Text;
                     DateTextBox.Text = Date;
@@ -364,7 +361,7 @@ namespace Invest4U
                 if (Term2RadioButton.Checked)
                 {
                     PanelTerm = PANEL2TERM2; TermInterest = PANEL2TERM2INTEREST;
-                    double InterestCalculation = CalculateInterest(PrincipalAmount, TermInterest, PanelTerm);
+                    decimal InterestCalculation = CalculateInterest(PrincipalAmount, TermInterest, PanelTerm);
                     InterestEarned = InterestCalculation - InvestmentAmount;
                     NameTextBox.Text = CustomerNameTextBox.Text;
                     DateTextBox.Text = Date;
@@ -380,7 +377,7 @@ namespace Invest4U
                 if (Term3RadioButton.Checked)
                 {
                     PanelTerm = PANEL2TERM3; TermInterest = PANEL2TERM3INTEREST;
-                    double InterestCalculation = CalculateInterest(PrincipalAmount, TermInterest, PanelTerm);
+                    decimal InterestCalculation = CalculateInterest(PrincipalAmount, TermInterest, PanelTerm);
                     InterestEarned = InterestCalculation - InvestmentAmount;
                     NameTextBox.Text = CustomerNameTextBox.Text;
                     DateTextBox.Text = Date;
@@ -395,7 +392,7 @@ namespace Invest4U
                 if (Term4RadioButton.Checked)
                 {
                     PanelTerm = PANEL2TERM4; TermInterest = PANEL2TERM4INTEREST;
-                    double InterestCalculation = CalculateInterest(PrincipalAmount, TermInterest, PanelTerm);
+                    decimal InterestCalculation = CalculateInterest(PrincipalAmount, TermInterest, PanelTerm);
                     InterestEarned = InterestCalculation - InvestmentAmount;
                     NameTextBox.Text = CustomerNameTextBox.Text;
                     DateTextBox.Text = Date;
@@ -514,9 +511,9 @@ namespace Invest4U
             SearchFile = File.OpenText("TransactionDetails.txt");
 
             int TotalTranasctionCount = 0;
-            double TotalInterest = 0, TotalTerm = 0;
-            double InvestedAmountTotal = 0;
-            double AverageTerm = 0, AverageAmountInvested = 0;
+            decimal TotalInterest = 0, TotalTerm = 0;
+            decimal InvestedAmountTotal = 0;
+            decimal AverageTerm = 0, AverageAmountInvested = 0;
 
             while (!SearchFile.EndOfStream)
             {
@@ -529,7 +526,7 @@ namespace Invest4U
                 int InvestmentAmount = int.Parse(SearchFile.ReadLine());
                 int TermSearch = int.Parse(SearchFile.ReadLine());
                 SearchFile.ReadLine();
-                double InterestSearch = double.Parse(SearchFile.ReadLine());
+                decimal InterestSearch = decimal.Parse(SearchFile.ReadLine());
 
                 SearchTransactionListBox.Items.Add("Transaction ID's: " + TransactionIDSearch + "\n");
 
@@ -609,12 +606,25 @@ namespace Invest4U
 
                     else if (DateSearch != "")
                     {
-                        if (SearchByDate.Equals(DateSearch, StringComparison.OrdinalIgnoreCase))
+                        DateTime parsedDate;
+                        if (DateTime.TryParseExact(DateSearch, "dd/MM/yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None, out parsedDate))
                         {
-                            SearchTransactionListBox.Items.Add(SearchDisplay(SearchByTransactionID, SearchByName, SearchByDate,
-                            SearchByEmailID, SearchByAge, SearchByTelephoneNumber, SearchByInvestment, SearchByTerm,
-                            SearchByInterest, SearchByBalance));
-                            RecordsFound = true;
+                            // The date is in the correct format
+                            if (DateSearch != "")
+                            {
+                                if (SearchByDate.Equals(DateSearch, StringComparison.OrdinalIgnoreCase))
+                                {
+                                    SearchTransactionListBox.Items.Add(SearchDisplay(SearchByTransactionID, SearchByName, SearchByDate,
+                                    SearchByEmailID, SearchByAge, SearchByTelephoneNumber, SearchByInvestment, SearchByTerm,
+                                    SearchByInterest, SearchByBalance));
+                                    RecordsFound = true;
+                                }
+                            }
+                        }
+                        else
+                        {
+                            // The date is not in the correct format
+                            MessageBox.Show("Please enter the date in dd/MM/yyyy format.", "Invalid Date Format", MessageBoxButtons.OK, MessageBoxIcon.Error);
                         }
                     }
 
